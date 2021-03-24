@@ -14,7 +14,7 @@ class DNN():
         self.loss = CrossEntropy()
         self.optimizer = optimizers[optimizer](self.lRate, momentum)
         self.regularizer = None
-        
+
         if regularizer != None:
             self.regularizer = regularizers[regularizer](regularizer_const)
 
@@ -46,9 +46,9 @@ class DNN():
     def compute_cost(self, y, AL):
 
         J = - np.sum(self.loss(y, AL)) / self.m
-
         if self.regularizer != None:
             J += self.regularizer(self.layers, self.m)
+            
         return J
 
     def backward_propagation(self, AL, y, caches):

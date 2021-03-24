@@ -14,9 +14,16 @@ class L2():
     
     def back_prop(self, W, m):
         return (self.gamma / m) * W
-    
+
+class Dropout():
+    def __init__(self, keep_probs=0.5):
+        self.keep_probs = keep_probs
+
+    def __call__(self):
+        pass
 
 regularizers = {
     'L2' : L2,
+    'Dropout' : Dropout,
 }
 

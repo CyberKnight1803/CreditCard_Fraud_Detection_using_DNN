@@ -52,7 +52,7 @@ class StochasticGD(GD):
             
 
 class MiniBatchGD(GD):
-    def __init__(self, lRate=0.45, momentum=0, batch_size=40000):
+    def __init__(self, lRate=0.45, momentum=0, batch_size=30000):
         super().__init__(lRate=lRate)
         self.batch_size = batch_size
         self.momentum = momentum
@@ -81,6 +81,7 @@ class MiniBatchGD(GD):
             miniBatch = (batch_X, batch_y)
             batches.append(miniBatch)
         
+        # Handling last batch 
         if m % self.batch_size != 0:
             batch_X = shuffled_X[:, nBatches * self.batch_size :]
             batch_y = shuffled_y[:, nBatches * self.batch_size :]
