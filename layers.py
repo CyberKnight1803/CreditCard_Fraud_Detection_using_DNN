@@ -45,8 +45,4 @@ class Layer():
 
         return _dA
 
-    def update_params(self, lRate):
-        self.W -= lRate * self.dW
-        self.b -= lRate * self.db
     
-
