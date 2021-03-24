@@ -52,7 +52,7 @@ class StochasticGD(GD):
             
 
 class MiniBatchGD(GD):
-    def __init__(self, lRate=0.45, momentum=0, batch_size=100000):
+    def __init__(self, lRate=0.45, momentum=0, batch_size=40000):
         super().__init__(lRate=lRate)
         self.batch_size = batch_size
         self.momentum = momentum

@@ -2,15 +2,19 @@ import numpy as np
 from layers import Layer
 from loss_functions import CrossEntropy
 from optimizers import optimizers
+from regularizations import regularizers
 
 
 class DNN():
 
-    def __init__(self, layer_dims, momentum=0, lRate=0.45, n_iters=5000, activation='ReLu', initializer = 'He', optimizer='StochasticGD'):
+    def __init__(self, layer_dims, momentum=0, lRate=0.45, n_iters=5000, activation='ReLu', initializer = 'He', optimizer='StochasticGD',
+    regularizer='L2', regularizer_const=0):
         self.lRate = lRate
         self.n_iters = n_iters
         self.loss = CrossEntropy()
         self.optimizer = optimizers[optimizer](self.lRate, momentum)
+        if regularizer != None:
+            self.regularizer = regularizers[regularizer](regularizer_const)
 
         self.layers = []
         self.n_layers = len(layer_dims) - 1
@@ -18,11 +22,11 @@ class DNN():
         #Initializing all layers with ReLu except last
         for l in range(1, self.n_layers):
             layer_shape = (layer_dims[l], layer_dims[l - 1])
-            self.layers.append(Layer(l, layer_shape, activation, initializer))
+            self.layers.append(Layer(l, layer_shape, activation, initializer, self.regularizer))
             print(self.layers[l - 1].__str__())
         
         layer_shape = (layer_dims[self.n_layers], layer_dims[self.n_layers - 1]) 
-        self.layers.append(Layer(self.n_layers, layer_shape, 'Sigmoid', 'Random'))
+        self.layers.append(Layer(self.n_layers, layer_shape, 'Sigmoid', 'Random', self.regularizer))
         print(self.layers[self.n_layers - 1].__str__())
 
     def forward_propagation(self, X):
@@ -40,6 +44,9 @@ class DNN():
     def compute_cost(self, y, AL):
 
         J = - np.sum(self.loss(y, AL)) / self.m
+
+        if self.regularizer != None:
+            J += self.regularizer(self.layers, self.m)
         return J
 
     def backward_propagation(self, AL, y, caches):

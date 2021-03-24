@@ -1,14 +1,15 @@
 import numpy as np
 from activation_functions import activations
 from initializers import initializers
+from regularizations import regularizers
 
 class Layer():
-    def __init__(self, l, layer_shape, activation='ReLu', initializer='He'):
+    def __init__(self, l, layer_shape, activation='ReLu', initializer='He', regularizer=None):
 
         self.l = l
         self.activation = activations[activation]()
         self.initializer = initializers[initializer]()
-
+        self.regularizer = regularizer
     
         self.W = self.initializer(layer_shape)
         self.b = np.zeros((layer_shape[0], 1))
@@ -33,8 +34,12 @@ class Layer():
         m = _A.shape[1]
 
         dZ = dA * self.activation.derivative(Z)
+
         self.dW = np.dot(dZ, _A.T) / m
         self.db = np.sum(dZ, axis=1, keepdims=True) / m
+
+        if self.regularizer != None:
+            self.dW += self.regularizer.back_prop(self.W, m)
 
         _dA = np.dot(self.W.T, dZ)
 
