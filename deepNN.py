@@ -49,23 +49,6 @@ class DNN():
         for l in reversed(range(self.n_layers)):
             dA = _dA
             _dA = self.layers[l].backward_pass(dA, caches[l])
-    
-    """
-    def fit(self, X, y, print_cost=False):
-        costs = []
-
-        for i in range(self.n_iters):
-            AL, caches = self.forward_propagation(X)
-            cost = self.compute_cost(y, AL)
-            self.backward_propagation(AL, y, caches)
-
-            for layer in self.layers:
-                layer.update_params(self.lRate)
-
-            if print_cost and i % 200 == 1:
-                print(f"Cost after iteration{i + 1}: {cost}")
-                costs.append(cost)
-    """
 
     def fit(self, X, y, print_cost=False):
         self.m = X.shape[1]
