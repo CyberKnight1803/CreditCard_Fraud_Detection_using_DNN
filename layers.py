@@ -1,14 +1,21 @@
 import numpy as np
 from activation_functions import activations
+from initializers import initializers
 
 class Layer():
-    def __init__(self, l, layer_dims, activation='ReLu'):
+    def __init__(self, l, layer_shape, activation='ReLu', initializer='He'):
 
         self.l = l
         self.activation = activations[activation]()
-        
-        self.W = np.random.randn(layer_dims[0], layer_dims[1]) * 0.01
-        self.b = np.zeros((layer_dims[0], 1))
+        self.initializer = initializers[initializer]()
+
+    
+        self.W = self.initializer(layer_shape)
+        self.b = np.zeros((layer_shape[0], 1))
+
+        # Used when momentum is set.
+        self.W_updt = np.zeros(np.shape(self.W)) 
+        self.b_updt = np.zeros(np.shape(self.b))
     
     def __str__(self):
         S = 'Layer ' + str(self.l) + ' W shape : ' + str(self.W.shape), 'b shape : ' + str(self.b.shape)

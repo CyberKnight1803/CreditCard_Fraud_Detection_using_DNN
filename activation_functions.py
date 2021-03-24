@@ -12,8 +12,8 @@ class Sigmoid():
         return S
     
     def derivative(self, z):
-        dz = self.__call__(z) * (1 - self.__call__(z))
-        return dz
+        dS = self.__call__(z) * (1 - self.__call__(z))
+        return dS
 
 class TanH():
     def __call__(self, z):
@@ -21,8 +21,8 @@ class TanH():
         return T
     
     def derivative(self, z):
-        dz = 1 - np.power(self.__call__(z), 2)
-        return dz
+        dT = 1 - np.power(self.__call__(z), 2)
+        return dT
 
 class ReLu():
     def __call__(self, z):
@@ -30,8 +30,8 @@ class ReLu():
         return R
     
     def derivative(self, z):
-        dz = np.where(z > 0, 1, 0)
-        return dz
+        dR = np.where(z > 0, 1, 0)
+        return dR
 
 class LeakyReLu():
     def __init__(self, grad = 0.15):
@@ -42,8 +42,8 @@ class LeakyReLu():
         return L
     
     def derivative(self, z):
-        dz = np.where(z > 0, 1, self.grad)
-        return dz
+        dL = np.where(z > 0, 1, self.grad)
+        return dL
 
 
 activations = {
