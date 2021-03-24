@@ -13,6 +13,8 @@ class DNN():
         self.n_iters = n_iters
         self.loss = CrossEntropy()
         self.optimizer = optimizers[optimizer](self.lRate, momentum)
+        self.regularizer = None
+        
         if regularizer != None:
             self.regularizer = regularizers[regularizer](regularizer_const)
 
