@@ -26,3 +26,8 @@ class SquareLoss():
     def derivative(self, y, A):
         dA = -(y - A)
         return dA
+
+loss_functions = {
+    'CrossEntropy' : CrossEntropy,
+    'SquareLoss' : SquareLoss,
+}
