@@ -24,7 +24,7 @@ class DNN():
         elif GD_type == 'StochasticGD':
             self.GD_type = GD_variants[GD_type](self.lRate, momentum, beta, self.optimizer)
         elif GD_type == 'MiniBatchGD':
-            self.GD_type = GD_variants[GD_type](self.lRate, momentum, batch_size, self.optimizer)
+            self.GD_type = GD_variants[GD_type](self.lRate, momentum, beta, batch_size, self.optimizer)
 
         self.layers = []
         self.n_layers = len(layer_dims) - 1
@@ -77,7 +77,7 @@ class DNN():
         }
 
         for i in range(0, self.n_iters):
-            self.GD_type(X, y, self.layers, mechanism, costs, i, print_cost=True)
+            self.GD_type(X, y, self.layers, mechanism, self.costs, i, print_cost=True)
 
         return self.costs
     

@@ -73,7 +73,7 @@ class MiniBatchGD(GD):
         super().__init__(lRate=lRate)
         self.batch_size = batch_size
         self.momentum = momentum
-
+        self.optimizer = optimizer
         if optimizer == 'Momentum':
             self.optimizer = optimizers[optimizer](momentum)
         elif optimizer == 'RMSprop':
@@ -125,7 +125,7 @@ class MiniBatchGD(GD):
             cost = mechanism['compute_cost'](_y, AL)
             mechanism['backward_prop'](AL, _y, caches)
 
-            self.update(layers, itr)
+            self.update(layers)
         
         costs.append(cost)
         if print_cost and itr % 10 == 0:

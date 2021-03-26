@@ -46,7 +46,7 @@ class Adam():
         self.epsilon = 1e-8
         self.t = 0 #Steps taken by adam
     
-    def __call__(self, layer, bias=False):
+    def __call__(self, layer, bias=True):
         self.t += 1
 
         layer.V_w = self.momentum * layer.V_w + (1 - self.momentum) * layer.dW
