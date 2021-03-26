@@ -1,116 +1,72 @@
 import numpy as np
 
-class GD():
-    def __init__(self, lRate=0.45):
-        self.lRate = lRate
-    
-    def update(self, layers):
-        for layer in layers:
-            layer.W -= self.lRate * layer.dW
-            layer.b -= self.lRate * layer.db
-
-class BatchGD(GD):
-    def __init__(self, lRate=0.45, momentum=0):
-        super().__init__(lRate=lRate)
-    
-    def __call__(self, X, y, layers, mechanism, costs, itr, print_cost=True):
-
-        AL, caches = mechanism['forward_prop'](X)
-        cost = mechanism['compute_cost'](y, AL)
-        mechanism['backward_prop'](AL, y, caches)
-        costs.append(cost)
-        self.update(layers)
-
-        if print_cost and itr % 100 == 0:
-            print(f"Cost after iteration{itr}: {cost}")
-
-
-class StochasticGD(GD):
-    def __init__(self, lRate=0.45, momentum=0):
-        super().__init__(lRate=lRate)
+class Momentum():
+    def __init__(self, momentum):
         self.momentum = momentum
+        self.t = 0 # steps taken
     
-    def update(self, layers):
-        for layer in layers:
-            layer.W_updt = self.momentum * layer.W_updt + (1 - self.momentum) * layer.dW
-            layer.b_updt = self.momentum * layer.b_updt + (1 - self.momentum) * layer.db
-            layer.W -= self.lRate * layer.W_updt
-            layer.b -= self.lRate * layer.b_updt
-    
-    def __call__(self, X, y, layers, mechanism, costs, itr, print_cost=True):
-        m = X.shape[1]  
-        cost = 0
-        for i in range(0, m):
-            AL, caches = mechanism['forward_prop'](X[:, i].reshape(-1, 1))
-            cost = mechanism['compute_cost'](y[:, i].reshape(1, -1), AL)
-            mechanism['backward_prop'](AL, y[:, i].reshape(1, -1), caches)
-            self.update(layers)
-        
-        costs.append(cost)
-        if print_cost and itr % 10 == 0:
-            print(f"Cost after iteration{itr}: {cost}")
-            
+    def __call__(self, layer, bias=False):
+        self.t += 1
 
-class MiniBatchGD(GD):
-    def __init__(self, lRate=0.45, momentum=0, batch_size=30000):
-        super().__init__(lRate=lRate)
-        self.batch_size = batch_size
+        layer.V_w = self.momentum * layer.V_w + (1 - self.momentum) * layer.dW
+        layer.V_b = self.momentum * layer.V_b + (1 - self.momentum) * layer.db
+
+        if bias == True:
+            layer.V_w /= (1 - self.momentum ** self.t)
+            layer.V_b /= (1 - self.momentum ** self.t)
+    
+    def update(self, layer, lRate):
+        layer.W -= lRate * layer.V_w
+        layer.b -= lRate * layer.V_b
+
+class RMSprop():
+    def __init__(self, beta):
+        self.beta = beta
+        self.epsilon = 1e-8  # For numerical stablity
+        self.t = 0 # Steps taken
+
+    def __call__(self, layer, bias=False):
+        self.t += 1
+
+        layer.S_w = self.beta * layer.S_w + (1 - self.beta) * np.power(layer.dW, 2)
+        layer.S_b = self.beta * layer.S_b + (1 - self.beta) * np.power(layer.db, 2)
+
+        if bias == True:
+            layer.S_w /= (1 - self.beta ** self.t)
+            layer.S_b /= (1 - self.beta ** self.t)
+    
+    def update(self, layer, lRate):
+        layer.W -= lRate * layer.dW / np.sqrt(layer.S_w + self.epsilon)
+        layer.b -= lRate * layer.db / np.sqrt(layer.S_b + self.epsilon)
+
+class Adam():
+    def __init__(self, momentum, beta):
         self.momentum = momentum
+        self.beta = beta
+        self.epsilon = 1e-8
+        self.t = 0 #Steps taken by adam
     
-    def update(self, layers):
-        for layer in layers:
-            layer.W_updt = self.momentum * layer.W_updt + (1 - self.momentum) * layer.dW
-            layer.b_updt = self.momentum * layer.b_updt + (1 - self.momentum) * layer.db
-            layer.W -= self.lRate * layer.W_updt
-            layer.b -= self.lRate * layer.b_updt
-    
-    def createBatches(self, X, y, seed=0):
+    def __call__(self, layer, bias=False):
+        self.t += 1
 
-        m = X.shape[1]
-        permutation = list(np.random.permutation(m))
-        shuffled_X = X[:, permutation]
-        shuffled_y = y[:, permutation].reshape(1, m)
+        layer.V_w = self.momentum * layer.V_w + (1 - self.momentum) * layer.dW
+        layer.V_b = self.momentum * layer.V_b + (1 - self.momentum) * layer.db
+        layer.S_w = self.beta * layer.S_w + (1 - self.beta) * np.power(layer.dW, 2)
+        layer.S_b = self.beta * layer.S_b + (1 - self.beta) * np.power(layer.db, 2)
 
-        batches = []
-        nBatches = int(m / self.batch_size)
+        if bias == True:
+            layer.V_w /= (1 - self.momentum ** self.t)
+            layer.V_b /= (1 - self.momentum ** self.t)
+            layer.S_w /= (1 - self.beta ** self.t)
+            layer.S_b /= (1 - self.beta ** self.t)
 
-        for i in range(0, nBatches):
-            batch_X = shuffled_X[:, i * self.batch_size : (i + 1) * self.batch_size]
-            batch_y = shuffled_y[:, i * self.batch_size : (i + 1) * self.batch_size]
-
-            miniBatch = (batch_X, batch_y)
-            batches.append(miniBatch)
-        
-        # Handling last batch 
-        if m % self.batch_size != 0:
-            batch_X = shuffled_X[:, nBatches * self.batch_size :]
-            batch_y = shuffled_y[:, nBatches * self.batch_size :]
-
-            miniBatch = (batch_X, batch_y)
-            batches.append(miniBatch)
-        
-        return batches
-    
-    def __call__(self, X, y, layers, mechanism, costs, itr, print_cost=True):
-
-        batches = self.createBatches(X, y)
-        cost = 0
-        for b in range(0, len(batches)):
-            _X, _y = batches[b]
-
-            AL, caches = mechanism['forward_prop'](_X)
-            cost = mechanism['compute_cost'](_y, AL)
-            mechanism['backward_prop'](AL, _y, caches)
-
-            self.update(layers)
-        
-        costs.append(cost)
-        if print_cost and itr % 10 == 0:
-            print(f"Cost after iteration{itr}: {cost}")
-
+    def update(self, layer, lRate):
+        layer.W -= lRate * layer.V_w / np.sqrt(layer.S_w + self.epsilon)
+        layer.b -= lRate * layer.V_b / np.sqrt(layer.S_b + self.epsilon)
 
 optimizers = {
-    'BatchGD' : BatchGD,
-    'StochasticGD' : StochasticGD,
-    'MiniBatchGD' : MiniBatchGD,
+    'Momentum' : Momentum,
+    'RMSprop' : RMSprop,
+    'Adam' : Adam,
 }
+

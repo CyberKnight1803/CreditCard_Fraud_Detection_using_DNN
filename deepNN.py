@@ -1,29 +1,30 @@
 import numpy as np
 from layers import Layer
 from loss_functions import CrossEntropy
-from optimizers import optimizers
+from gradientDescent import GD_variants
 from regularizations import regularizers
 
 
 class DNN():
 
-    def __init__(self, layer_dims, momentum=0, lRate=0.45, n_iters=5000, activation='ReLu', initializer = 'He', optimizer='StochasticGD',
-    batch_size=None, regularizer=None, regularizer_const=0):
+    def __init__(self, layer_dims, momentum=0, beta=0, lRate=0.45, n_iters=5000, activation='ReLu', initializer = 'He', GD_type='StochasticGD',
+    batch_size=None, optimizer=None, regularizer=None, regularizer_const=0):
         self.lRate = lRate
         self.n_iters = n_iters
         self.loss = CrossEntropy()
+        self.optimizer = optimizer
 
         self.regularizer = regularizer
         if regularizer != None:
             self.regularizer = regularizers[regularizer](regularizer_const)
         
-        self.optimizer = optimizer
-        if optimizer == 'BatchGD':
-            self.optimizer = optimizers[optimizer](self.lRate)
-        elif optimizer == 'StochasticGD':
-            self.optimizer = optimizers[optimizer](self.lRate, momentum)
-        elif optimizer == 'MiniBatchGD':
-            self.optimizer = optimizers[optimizer](self.lRate, momentum, batch_size)
+        self.GD_type = None
+        if GD_type == 'BatchGD':
+            self.GD_type = GD_variants[GD_type](self.lRate)
+        elif GD_type == 'StochasticGD':
+            self.GD_type = GD_variants[GD_type](self.lRate, momentum, beta, self.optimizer)
+        elif GD_type == 'MiniBatchGD':
+            self.GD_type = GD_variants[GD_type](self.lRate, momentum, batch_size, self.optimizer)
 
         self.layers = []
         self.n_layers = len(layer_dims) - 1
@@ -76,7 +77,7 @@ class DNN():
         }
 
         for i in range(0, self.n_iters):
-            self.optimizer(X, y, self.layers, mechanism, costs, i, print_cost=True)
+            self.GD_type(X, y, self.layers, mechanism, costs, i, print_cost=True)
 
         return self.costs
     

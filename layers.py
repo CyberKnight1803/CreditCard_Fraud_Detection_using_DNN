@@ -11,12 +11,17 @@ class Layer():
         self.initializer = initializers[initializer]()
         self.regularizer = regularizer
     
+        #Parameters
         self.W = self.initializer(layer_shape)
         self.b = np.zeros((layer_shape[0], 1))
 
         # Used when momentum is set.
-        self.W_updt = np.zeros(np.shape(self.W)) 
-        self.b_updt = np.zeros(np.shape(self.b))
+        self.V_w = np.zeros(np.shape(self.W)) 
+        self.V_b = np.zeros(np.shape(self.b))
+
+        #Used when RMSprop is set
+        self.S_w = np.zeros(np.shape(self.W))
+        self.S_b = np.zeros(np.shape(self.b))
     
     def __str__(self):
         S = 'Layer ' + str(self.l) + ' W shape : ' + str(self.W.shape), 'b shape : ' + str(self.b.shape)

@@ -49,8 +49,6 @@ class NormalizedXavier():
         return np.random.uniform(-limit, limit, shape)
     
 
-
-
 initializers = {
     'Random' : Random,
     'Ones' : Ones,

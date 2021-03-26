@@ -11,7 +11,7 @@ class CrossEntropy():
 
     def derivative(self, y, A):
 
-        # Preventive measure to avoid division by zero
+        # To avoid exploding gradients
         P = np.clip(A, 1e-15, 1 - 1e-15)
         dA = - (np.divide(y, P) - np.divide(1 - y, 1 - P))
         
