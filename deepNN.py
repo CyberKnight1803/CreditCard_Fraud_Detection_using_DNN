@@ -8,15 +8,22 @@ from regularizations import regularizers
 class DNN():
 
     def __init__(self, layer_dims, momentum=0, lRate=0.45, n_iters=5000, activation='ReLu', initializer = 'He', optimizer='StochasticGD',
-    regularizer='L2', regularizer_const=0):
+    batch_size=None, regularizer=None, regularizer_const=0):
         self.lRate = lRate
         self.n_iters = n_iters
         self.loss = CrossEntropy()
-        self.optimizer = optimizers[optimizer](self.lRate, momentum)
-        self.regularizer = None
 
+        self.regularizer = regularizer
         if regularizer != None:
             self.regularizer = regularizers[regularizer](regularizer_const)
+        
+        self.optimizer = optimizer
+        if optimizer == 'BatchGD':
+            self.optimizer = optimizers[optimizer](self.lRate)
+        elif optimizer == 'StochasticGD':
+            self.optimizer = optimizers[optimizer](self.lRate, momentum)
+        elif optimizer == 'MiniBatchGD':
+            self.optimizer = optimizers[optimizer](self.lRate, momentum, batch_size)
 
         self.layers = []
         self.n_layers = len(layer_dims) - 1
@@ -61,7 +68,7 @@ class DNN():
 
     def fit(self, X, y, print_cost=False):
         self.m = X.shape[1]
-        costs = []
+        self.costs = []
         mechanism = {
             'forward_prop' : self.forward_propagation,
             'backward_prop' : self.backward_propagation,
@@ -71,7 +78,7 @@ class DNN():
         for i in range(0, self.n_iters):
             self.optimizer(X, y, self.layers, mechanism, costs, i, print_cost=True)
 
-        return costs
+        return self.costs
     
     def performance(self, X, y):
         A, caches = self.forward_propagation(X)
