@@ -73,10 +73,24 @@ class DNN():
 
         return costs
     
-    def accuracy(self, X, y):
+    def performance(self, X, y):
         A, caches = self.forward_propagation(X)
-        
         P = np.around(A)
+        metrics = {}
+        
+        correctPred = P[P == y]
+        trueP = np.sum(correctPred == 1)
+
+        precision = trueP / np.sum(P == 1)
+        recall = trueP / np.sum(y == 1)
+        F1Score = 2 * (precision * recall) / (precision + recall)
+
         acc = np.sum(P == y) / y.shape[1]
-        return acc
+
+        metrics = { 'accuracy' : acc,
+                    'precision' : precision,
+                    'recall' : recall,
+                    'F1Score' : F1Score}
+
+        return metrics
 
